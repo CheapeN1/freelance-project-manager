@@ -21,7 +21,7 @@ public class Project {
     @Column(nullable = false)
     private String name; // Proje adı (örn: "Kurumsal Web Sitesi Paketi")
 
-    @Lob // Uzun metinler için
+    @Column(columnDefinition = "text")
     private String description; // Proje açıklaması
 
     @Column(nullable = false)
