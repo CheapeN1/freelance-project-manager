@@ -30,7 +30,6 @@ const login = async (username, password) => {
 // Servis fonksiyonlarımızı export edelim
 const authService = {
   login,
-  register,
 };
 
 export default authService;
