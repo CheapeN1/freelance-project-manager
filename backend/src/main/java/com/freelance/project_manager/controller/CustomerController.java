@@ -3,11 +3,14 @@ package com.freelance.project_manager.controller;
 import com.freelance.project_manager.dto.CustomerDto;
 import com.freelance.project_manager.service.CustomerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 
 @RestController // Bu sınıfın bir REST API controller'ı olduğunu belirtir.
 @RequestMapping("/api/v1/customers") // Bu controller'daki tüm endpoint'lerin başına bu yol eklenecek.
@@ -25,9 +28,14 @@ public class CustomerController {
     }
 
     // TÜM MÜŞTERİLERİ GETİRME ENDPOINT'İ
-    @GetMapping // HTTP GET isteklerini bu metoda yönlendirir.
-    public ResponseEntity<List<CustomerDto>> getAllCustomers() {
-        List<CustomerDto> customers = customerService.getAllCustomers();
-        return ResponseEntity.ok(customers); // Cevap olarak 200 OK ve müşteri listesi döner.
+    @GetMapping
+    public ResponseEntity<Page<CustomerDto>> getAllCustomers(
+            @PageableDefault(size = 10, sort = "name") Pageable pageable) { // Varsayılan size=10, sıralama=name
+
+        // Servisi Pageable ile çağırıyoruz
+        Page<CustomerDto> customersPage = customerService.getAllCustomers(pageable);
+
+        // Cevap olarak Page nesnesini dönüyoruz
+        return ResponseEntity.ok(customersPage);
     }
 }

@@ -3,6 +3,8 @@ package com.freelance.project_manager.mapper;
 import com.freelance.project_manager.dto.InstallmentDto; // Import et
 import com.freelance.project_manager.dto.PaymentPlanDto;
 import com.freelance.project_manager.model.Installment; // Import et
+import com.freelance.project_manager.dto.PaymentRecordDto;
+import com.freelance.project_manager.model.PaymentRecord;
 import com.freelance.project_manager.model.PaymentPlan;
 import com.freelance.project_manager.model.Project;
 import com.freelance.project_manager.model.enums.PaymentPlanStatus;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors; // Listeyi maplemek için
 public class PaymentPlanMapper {
 
     private final InstallmentMapper installmentMapper; // Diğer mapper'ı kullanacağız
+    private final PaymentRecordMapper paymentRecordMapper;
 
     public PaymentPlanDto toDto(PaymentPlan plan) {
         PaymentPlanDto dto = new PaymentPlanDto();
@@ -42,6 +45,14 @@ public class PaymentPlanMapper {
             dto.setInstallments(Collections.emptyList()); // Eğer taksit yoksa boş liste ata
         }
 
+        // Ödeme Kayıtlarını (Faturaları) DTO'ya çevir
+        if (plan.getPaymentRecords() != null) {
+            dto.setPaymentRecords(plan.getPaymentRecords().stream()
+                    .map(paymentRecordMapper::toDto)
+                    .collect(Collectors.toList()));
+        } else {
+            dto.setPaymentRecords(Collections.emptyList());
+        }
         return dto;
     }
 

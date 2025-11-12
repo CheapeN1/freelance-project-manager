@@ -22,4 +22,6 @@ public class PaymentPlanDto {
 
     // İlişkili taksitleri de DTO olarak taşıyacağız
     private List<InstallmentDto> installments;
+
+    private List<PaymentRecordDto> paymentRecords;
 }

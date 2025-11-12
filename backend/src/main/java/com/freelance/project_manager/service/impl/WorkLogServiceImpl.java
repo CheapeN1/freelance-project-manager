@@ -1,6 +1,7 @@
 package com.freelance.project_manager.service.impl;
 
 import com.freelance.project_manager.bean.worklog.CreateWorkLogBean;
+import com.freelance.project_manager.bean.worklog.GetWorkLogsByProjectBean;
 import com.freelance.project_manager.bean.worklog.GetWorkLogsByRequestBean;
 import com.freelance.project_manager.dto.WorkLogDto;
 import com.freelance.project_manager.service.WorkLogService;
@@ -16,6 +17,7 @@ public class WorkLogServiceImpl implements WorkLogService {
 
     private final CreateWorkLogBean createWorkLogBean;
     private final GetWorkLogsByRequestBean getWorkLogsByRequestBean;
+    private final GetWorkLogsByProjectBean getWorkLogsByProjectBean;
 
     @Override
     public WorkLogDto createWorkLog(WorkLogDto workLogDto, Long requestId) {
@@ -28,5 +30,11 @@ public class WorkLogServiceImpl implements WorkLogService {
     public Page<WorkLogDto> getWorkLogsByRequestId(Long requestId, Pageable pageable) {
         // Tüm işi ve güvenliği Bean'e devret
         return getWorkLogsByRequestBean.get(requestId, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<WorkLogDto> getWorkLogsByProjectId(Long projectId, Pageable pageable) {
+        return getWorkLogsByProjectBean.get(projectId, pageable);
     }
 }

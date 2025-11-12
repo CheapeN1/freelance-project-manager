@@ -9,4 +9,6 @@ public interface WorkLogService {
     WorkLogDto createWorkLog(WorkLogDto workLogDto, Long requestId);
 
     Page<WorkLogDto> getWorkLogsByRequestId(Long requestId, Pageable pageable);
+
+    Page<WorkLogDto> getWorkLogsByProjectId(Long projectId, Pageable pageable);
 }

@@ -5,6 +5,7 @@ import com.freelance.project_manager.mapper.CustomerMapper;
 import com.freelance.project_manager.model.Customer;
 import com.freelance.project_manager.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ public class CreateCustomerBean {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional // Veritabanı işleminin güvenli (atomic) olmasını sağlar.
     public CustomerDto create(CustomerDto customerDto) {
         // 1. Gelen DTO'yu veritabanına kaydedilecek Entity'ye çevir.

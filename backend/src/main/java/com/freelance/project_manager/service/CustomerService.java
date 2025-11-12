@@ -1,6 +1,8 @@
 package com.freelance.project_manager.service;
 
 import com.freelance.project_manager.dto.CustomerDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -13,11 +15,7 @@ public interface CustomerService {
      */
     CustomerDto createCustomer(CustomerDto customerDto);
 
-    /**
-     * Sistemdeki tüm müşterileri listeler.
-     * @return Müşteri DTO listesi
-     */
-    List<CustomerDto> getAllCustomers();
+    Page<CustomerDto> getAllCustomers(Pageable pageable);
 
     // Diğer metod tanımları (getById, update, delete) buraya eklenecek.
 

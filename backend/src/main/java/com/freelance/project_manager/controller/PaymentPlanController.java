@@ -54,4 +54,26 @@ public class PaymentPlanController {
         InstallmentDto updatedInstallment = paymentPlanService.markInstallmentAsPaid(installmentId);
         return ResponseEntity.ok(updatedInstallment);
     }
+
+    /**
+     * BİR ÖDEME PLANINI (genellikle ONE_TIME) TAMAMLANDI OLARAK İŞARETLER (SADECE ADMIN)
+     * PATCH http://localhost:8080/api/v1/payment-plans/1/mark-paid
+     */
+    @PatchMapping("/payment-plans/{planId}/mark-paid")
+    public ResponseEntity<PaymentPlanDto> markPlanAsPaid(@PathVariable Long planId) {
+        // Güvenlik: Sadece Admin (Bean içinde kontrol ediliyor)
+        PaymentPlanDto updatedPlan = paymentPlanService.markPlanAsPaid(planId);
+        return ResponseEntity.ok(updatedPlan);
+    }
+
+    /**
+     * BİR ÖDEME PLANINI İPTAL EDİLDİ OLARAK İŞARETLER (SADECE ADMIN)
+     * PATCH http://localhost:8080/api/v1/payment-plans/1/cancel
+     */
+    @PatchMapping("/payment-plans/{planId}/cancel")
+    public ResponseEntity<PaymentPlanDto> cancelPaymentPlan(@PathVariable Long planId) {
+        // Güvenlik: Sadece Admin (Bean içinde kontrol ediliyor)
+        PaymentPlanDto cancelledPlan = paymentPlanService.cancelPaymentPlan(planId);
+        return ResponseEntity.ok(cancelledPlan);
+    }
 }

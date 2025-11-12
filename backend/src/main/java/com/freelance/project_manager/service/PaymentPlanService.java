@@ -12,4 +12,8 @@ public interface PaymentPlanService {
     Page<PaymentPlanDto> getPaymentPlansByProjectId(Long projectId, Pageable pageable);
 
     InstallmentDto markInstallmentAsPaid(Long installmentId);
+
+    PaymentPlanDto markPlanAsPaid(Long paymentPlanId);
+
+    PaymentPlanDto cancelPaymentPlan(Long paymentPlanId);
 }

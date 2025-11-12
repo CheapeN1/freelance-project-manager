@@ -57,7 +57,7 @@ public class PaymentPlan {
     @OneToMany(mappedBy = "paymentPlan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Installment> installments;
 
-    // TODO: Bu plana ait ödeme kayıtları (PaymentRecord) listesi eklenecek
-    // @OneToMany(mappedBy = "paymentPlan", cascade = CascadeType.ALL)
-    // private List<PaymentRecord> paymentRecords;
+    // Bu plana ait oluşturulmuş faturaları (Abonelik/Saatlik) tutar
+    @OneToMany(mappedBy = "paymentPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PaymentRecord> paymentRecords;
 }

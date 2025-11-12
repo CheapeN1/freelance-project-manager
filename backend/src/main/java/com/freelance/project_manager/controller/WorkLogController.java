@@ -45,4 +45,17 @@ public class WorkLogController {
         Page<WorkLogDto> workLogs = workLogService.getWorkLogsByRequestId(requestId, pageable);
         return ResponseEntity.ok(workLogs);
     }
+
+    /**
+     * BİR PROJEYE AİT TÜM ÇALIŞMA KAYITLARINI SAYFALI LİSTELER (RAPOR İÇİN)
+     * GET http://localhost:8080/api/v1/projects/2/worklogs
+     */
+    @GetMapping("/projects/{projectId}/worklogs")
+    public ResponseEntity<Page<WorkLogDto>> getWorkLogsForProject(
+            @PathVariable Long projectId,
+            @PageableDefault(size = 20, sort = "date") Pageable pageable) {
+        // Güvenlik: Admin veya Proje Sahibi (Bean içinde kontrol ediliyor)
+        Page<WorkLogDto> workLogs = workLogService.getWorkLogsByProjectId(projectId, pageable);
+        return ResponseEntity.ok(workLogs);
+    }
 }

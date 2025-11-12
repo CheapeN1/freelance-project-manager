@@ -15,15 +15,27 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+// --- CORS İÇİN GEREKLİ IMPORTLAR ---
+import org.springframework.http.HttpMethod;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
+import java.util.List;
+// --- HttpSecurity'nin cors() metodu için static import ---
+import static org.springframework.security.config.Customizer.withDefaults;
+
 
 @Configuration // Bu sınıfın bir Spring konfigürasyon sınıfı olduğunu belirtir.
 @EnableWebSecurity // Spring Security'yi web katmanında aktif eder.
-@EnableMethodSecurity(prePostEnabled = true)
+// @EnableMethodSecurity(prePostEnabled = true) // Bu satırda @EnableMethodSecurity yeterli, prePostEnabled=true varsayılanıdır
+@EnableMethodSecurity // Metot seviyesinde güvenlik (@PreAuthorize vb.) için gereklidir
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    // YENİ ALAN: Kendi UserDetailsService'imizi buraya enjekte ediyoruz.
+    // Kendi UserDetailsService'imizi buraya enjekte ediyoruz.
     private final CustomUserDetailsService customUserDetailsService;
+    // JWT filtreleme mekanizmamızı buraya enjekte ediyoruz.
     private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
@@ -33,7 +45,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // --- YENİ EKLENECEK BEAN ---
     /**
      * Spring Security'ye kimlik doğrulama sağlayıcımızı (provider) bildiriyoruz.
      * Bu provider, bizim UserDetailsService'imizi ve PasswordEncoder'ımızı kullanacak.
@@ -47,7 +58,6 @@ public class SecurityConfig {
     }
 
 
-    // --- YENİ EKLENECEK BEAN ---
     /**
      * AuthenticationManager'ı (kimlik doğrulama yöneticisi)
      * Spring konteynerine bir Bean olarak ekliyoruz.
@@ -58,26 +68,59 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
+    // --- YENİ EKLENEN CORS YAPILANDIRMA BEAN'İ ---
+    /**
+     * CORS (Cross-Origin Resource Sharing) ayarlarını tanımlar.
+     * Frontend uygulamasının (localhost:5173) backend'e (localhost:8080)
+     * güvenli bir şekilde istek atabilmesini sağlar.
+     */
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Frontend'in çalıştığı adrese (origin) izin veriyoruz.
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        // İzin verilen HTTP metotları
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        // İzin verilen tüm başlıklar (*)
+        configuration.setAllowedHeaders(List.of("*"));
+        // Tarayıcının kimlik bilgileriyle (örn: token) istek göndermesine izin ver
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Bu yapılandırmayı tüm API yolları (/**) için kaydet
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+    // --- CORS YAPILANDIRMA BEAN'İ SONU ---
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // CSRF'i devre dışı bırak
-                .authorizeHttpRequests(auth -> auth
-                        // 1. Kayıt ve Giriş endpoint'lerine izinsiz erişime izin ver.
-                        .requestMatchers("/api/v1/auth/**").permitAll()
+                // --- CORS'u Aktif Et ---
+                .cors(withDefaults()) // corsConfigurationSource Bean'ini kullanır
 
-                        // 2. Geriye kalan TÜM istekler kimlik doğrulaması gerektirsin.
+                .csrf(csrf -> csrf.disable()) // CSRF'i devre dışı bırak
+
+                // --- YETKİLENDİRME KURALLARI (DAHA DETAYLI) ---
+                .authorizeHttpRequests(auth -> auth
+                        // 1. Önce TÜM 'OPTIONS' isteklerine (CORS ön kontrolü için) izin ver.
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // 2. Sonra '/api/v1/auth/' altındaki POST isteklerine (login ve register için) izin ver.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
+
+                        // 3. Geriye kalan TÜM diğer istekler kimlik doğrulaması gerektirsin (authenticated).
                         .anyRequest().authenticated()
                 )
-                // 3. Oturum yönetimini STATELESS (durumsuz) yap.
-                //    REST API'ler oturum tutmaz (Session kullanmaz). Her istek JWT ile doğrulanır.
+                // --- YETKİLENDİRME SONU ---
+
+                // Oturum yönetimini STATELESS yap (JWT için gerekli)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 4. Bizim kimlik doğrulama sağlayıcımızı kullan.
+                // Bizim kimlik doğrulama sağlayıcımızı kullan
                 .authenticationProvider(authenticationProvider())
 
-                // 5. Bizim JWT filtremizi, standart filtreden (UsernamePasswordAuthenticationFilter)
-                //    HEMEN ÖNCE çalışacak şekilde zincire ekle.
+                // JWT filtremizi doğru yere ekle
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -31,7 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 1. Gelen isteğin başlığından (header) 'Authorization' kısmını al.
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
-        final String username;
+        String username = null; // Başlangıçta null olsun
 
         // 2. Eğer 'Authorization' başlığı yoksa veya 'Bearer ' ile başlamıyorsa,
         //    bu isteği filtrelemeden devam ettir. (Bu, muhtemelen login/register sayfasıdır)
@@ -40,33 +40,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 3. 'Bearer ' kısmını atarak token'ı al (örn: "Bearer eyJhbGciOi...").
-        jwt = authHeader.substring(7);
+        try {
+            // 3. 'Bearer ' kısmını atarak token'ı al (örn: "Bearer eyJhbGciOi...").
+            jwt = authHeader.substring(7);
 
-        // 4. Token'dan kullanıcı adını (username) çıkar.
-        username = jwtUtil.extractUsername(jwt);
+            // 4. Token'dan kullanıcı adını (username) çıkar.
+            username = jwtUtil.extractUsername(jwt);
 
-        // 5. Kullanıcı adı varsa VE bu kullanıcı için daha önce bir oturum açılmamışsa...
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // 5. Kullanıcı adı varsa VE bu kullanıcı için daha önce bir oturum açılmamışsa...
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // 6. Kullanıcıyı veritabanından 'UserDetailsService' ile bul.
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                // 6. Kullanıcıyı veritabanından 'UserDetailsService' ile bul.
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            // 7. Token'ın bu kullanıcıya ait ve süresinin dolmamış olduğunu doğrula.
-            if (jwtUtil.validateToken(jwt, userDetails)) {
+                // 7. Token'ın bu kullanıcıya ait ve süresinin dolmamış olduğunu doğrula.
+                if (jwtUtil.validateToken(jwt, userDetails)) {
 
-                // 8. Token geçerliyse, Spring Security için bir kimlik doğrulama nesnesi oluştur.
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null, // Şifreye gerek yok, token ile doğruladık
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // 8. Token geçerliyse, Spring Security için bir kimlik doğrulama nesnesi oluştur.
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null, // Şifreye gerek yok, token ile doğruladık
+                            userDetails.getAuthorities()
+                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // 9. Doğrulanmış kullanıcıyı Spring Security'nin "güvenlik bağlamına" (Security Context) yerleştir.
-                //    Artık bu istek, "kimliği doğrulanmış bir kullanıcı" tarafından yapılmış sayılır.
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    // 9. Doğrulanmış kullanıcıyı Spring Security'nin "güvenlik bağlamına" (Security Context) yerleştir.
+                    //    Artık bu istek, "kimliği doğrulanmış bir kullanıcı" tarafından yapılmış sayılır.
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception e) {
+            // Token hatalıysa (örn: "undefined" gelirse) buraya düşer ve sunucunun çökmesini engeller.
+            System.out.println("JWT İşleme Hatası: " + e.getMessage());
         }
 
         // 10. Filtre zincirinde bir sonraki adıma devam et.
