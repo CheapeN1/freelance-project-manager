@@ -1,6 +1,6 @@
 # --- 1. AŞAMA: BUILD (DERLEME) ---
 # Node.js 18 yüklü bir imaj kullanıyoruz
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 
 # Önce package.json'ı kopyalayıp bağımlılıkları indiriyoruz (Cache için)
