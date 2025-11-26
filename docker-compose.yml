@@ -1,0 +1,46 @@
+version: '3.8'  # Docker Compose sürümü
+
+services:  # Orkestradaki müzisyenler (Servisler)
+  
+  # --- 1. VERİTABANI (PostgreSQL) ---
+  postgres:
+    image: postgres:15-alpine  # Resmi ve hafif PostgreSQL imajı
+    container_name: freelance-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password  # Basit bir şifre (Local için)
+      POSTGRES_DB: freelancedb     # Veritabanı adı
+    ports:
+      - "5432:5432"  # Bilgisayarından bağlanmak istersen diye port açıyoruz
+    volumes:
+      - postgres-data:/var/lib/postgresql/data  # Veriler kaybolmasın diye kalıcı hafıza
+
+  # --- 2. BACKEND (Spring Boot) ---
+  backend:
+    build: ./backend  # Backend klasöründeki Dockerfile'ı kullan
+    container_name: freelance-api
+    ports:
+      - "8080:8080"   # Dışarıdan 8080 ile erişeceğiz
+    environment:
+      # Spring Boot ayarlarını buradan eziyoruz (Override)
+      # DİKKAT: 'localhost' yerine servis adı olan 'postgres' yazıyoruz!
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/freelancedb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      # Hibernate ayarları (Tabloları otomatik oluştursun)
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres  # Veritabanı açılmadan Backend başlamasın
+
+  # --- 3. FRONTEND (React + Nginx) ---
+  frontend:
+    build: ./frontend  # Frontend klasöründeki Dockerfile'ı kullan
+    container_name: freelance-ui
+    ports:
+      - "5173:80"  # Tarayıcıda localhost:5173 yazınca içerideki 80'e git
+    depends_on:
+      - backend   # Backend açılmadan Frontend başlamasın (Opsiyonel ama düzenli)
+
+# --- KALICI HAFIZA TANIMI ---
+volumes:
+  postgres-data: # Veritabanı dosyalarını tutacak olan depo
