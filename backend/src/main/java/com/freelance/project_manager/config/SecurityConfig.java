@@ -78,7 +78,8 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // Frontend'in çalıştığı adrese (origin) izin veriyoruz.
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        // Hem localhost'a hem de AWS IP adresine izin veriyoruz
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://3.234.236.12:5173"));
         // İzin verilen HTTP metotları
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         // İzin verilen tüm başlıklar (*)
