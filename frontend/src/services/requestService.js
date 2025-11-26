@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Ek İsterler API endpoint'lerinin temel URL'si
-const API_URL = 'http://localhost:8080/api/v1';
+const API_URL = 'http://3.234.236.12:8080/api/v1';
 
 /**
  * Belirli bir projeye ait ek isterleri sayfalı olarak getirir.

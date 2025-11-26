@@ -4,7 +4,7 @@ import axios from 'axios';
 // Vite, geliştirme sırasında proxy ayarı yapmamıza izin verir,
 // bu sayede CORS sorunları yaşamayız (bunu daha sonra ayarlayacağız).
 // Şimdilik doğrudan backend adresini yazalım.
-const API_URL = 'http://localhost:8080/api/v1/auth';
+const API_URL = 'http://3.234.236.12:8080/api/v1/auth';
 
 /**
  * Kullanıcı adı ve şifre ile backend'e login isteği atar.

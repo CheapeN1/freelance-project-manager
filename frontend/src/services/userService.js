@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/v1/users';
+const API_URL = 'http://3.234.236.12:8080/api/v1/users';
 
 // Yeni kullanıcıyı mevcut bir müşteriye ekle
 const addUserToCustomer = async (userData) => {
